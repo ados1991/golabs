@@ -1,0 +1,32 @@
+package main
+
+import (
+    "fmt"
+    "strings"
+    "time"
+)
+
+func extract_and_count(c chan string, num int) {
+    //fmt.Printf("call gorountine %v\n", num)
+    s := <- c
+    fmt.Printf("gorountine %v, string reveiced=%v\n", num, s)
+    fmt.Printf("done gorountine %v\n", num)
+}
+
+func main() {
+    str := "a b c d e"
+    ch := make(chan string)
+    fmt.Println("hello...")
+    arr := strings.Split(str, " ")
+    for i, s := range arr {
+        go extract_and_count(ch, i + 1)
+        select {
+            case ch <- s:
+                if (i + 1 ) == len(arr) {
+                    break
+                }
+        }
+    }
+    time.Sleep(time.Second)
+    close(ch)
+}
