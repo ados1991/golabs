@@ -1,0 +1,38 @@
+package main
+import (
+    "fmt"
+    "sync"
+    "strings"
+)
+
+func extract_and_count(c chan string, num int, wg *sync.WaitGroup) {
+    fmt.Printf("call gorountine %v\n", num)
+    defer wg.Done()
+    for {
+        s := <- c
+        arr := strings.Split(s, " ")
+        fmt.Printf("gorountine %v, array reveiced=%v\n", num, arr)
+        fmt.Printf("gorountine %v, data process=%v\n", num, arr[0])
+        if len(arr[1:]) == 0 && s == "" {
+            c <- ""
+            break
+        }
+        fmt.Printf("gorountine %v, array send=%v\n", num, arr[1:])
+        c <- strings.Join(arr[1:], " ")
+    }
+    fmt.Printf("done gorountine %v\n", num)
+}
+
+func main() {
+    var wg sync.WaitGroup
+    wg.Add(3)
+    str := "je vais aller au cinema demain matin"
+    ch := make(chan string, 1)
+    fmt.Println("hello...")
+    go extract_and_count(ch, 1, &wg)
+    go extract_and_count(ch, 2, &wg)
+    go extract_and_count(ch, 3, &wg)
+    ch <- str
+    wg.Wait()
+    close(ch)
+}
